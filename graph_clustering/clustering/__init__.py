@@ -1,3 +1,3 @@
-from .cluster_statuses import split_list_to_dict
+from .cluster_statuses import cluster_statuses
 
-__all__ = ['split_list_to_dict']
+__all__ = ['cluster_statuses']

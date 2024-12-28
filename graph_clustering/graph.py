@@ -3,7 +3,7 @@ from flask_cors import CORS, cross_origin
 import requests
 import json
 from vikalp_base_api import viaklp_bp
-from clustering import split_list_to_dict
+from clustering import cluster_statuses
 
 app = Flask(__name__)
 cors = CORS(app)
@@ -43,7 +43,7 @@ def get_profile(id):
             data = {
                 'account': account,
                 'statuses': {
-                    'cluster': split_list_to_dict(statuses, 1, title_prefix="tech")
+                    'cluster': cluster_statuses(statuses=statuses, parts=5, title_prefix="tech")
                 }
             }
             return data
