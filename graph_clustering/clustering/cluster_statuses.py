@@ -1,4 +1,4 @@
-def cluster_statuses(statuses, parts, title_prefix="Part", dont_repeat=False, percent_element_to_repeat=50, percent_parts_to_repeat_in=50):
+def cluster_statuses(statuses, num_parts, title_prefix="Part", dont_repeat=False, percent_element_to_repeat=50, percent_parts_to_repeat_in=50):
 
     """
     Splits a list into `n` parts and optionally repeats elements across parts based on specified percentages.
@@ -18,21 +18,21 @@ def cluster_statuses(statuses, parts, title_prefix="Part", dont_repeat=False, pe
     if not statuses:
         return {}
 
-    parts = min(parts, len(statuses))
+    num_parts = min(num_parts, len(statuses))
 
     percent_element_to_repeat = min(percent_element_to_repeat, 100)
 
     percent_parts_to_repeat_in = min(percent_parts_to_repeat_in, 100)
 
     # Determine the size of each chunk
-    k, m = divmod(len(statuses), parts)  # k: size of each chunk, m: remainder
-    parts = [statuses[i * k + min(i, m):(i + 1) * k + min(i + 1, m)] for i in range(parts)]
+    k, m = divmod(len(statuses), num_parts)  # k: size of each chunk, m: remainder
+    parts = [statuses[i * k + min(i, m):(i + 1) * k + min(i + 1, m)] for i in range(num_parts)]
 
     if not dont_repeat:
 
         overlap_size = round((percent_element_to_repeat / 100) * k)
 
-        parts_to_repeat_in = round((percent_parts_to_repeat_in / 100) * parts)
+        parts_to_repeat_in = round((percent_parts_to_repeat_in / 100) * num_parts)
 
         for i in range(parts_to_repeat_in):
             for j in range(parts_to_repeat_in):
