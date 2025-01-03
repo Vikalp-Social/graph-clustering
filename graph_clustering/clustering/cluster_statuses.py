@@ -1,54 +1,59 @@
-def cluster_statuses(statuses, num_parts, title_prefix="Part", dont_repeat=False, percent_element_to_repeat=50, percent_parts_to_repeat_in=50):
+import requests
+
+def cluster_statuses(statuses, url):
 
     """
-    Splits a list into `n` parts and optionally repeats elements across parts based on specified percentages.
+    Generate labels by clustering user posts using Carrot2 REST API 
+    https://github.com/carrot2/carrot2
 
     Args:
-        elements (list): The list to split.
-        n (int): Number of parts to split into.
-        title_prefix (str): Prefix for part titles.
-        dont_repeat (bool): If True, parts will not repeat elements.
-        percent_element_to_repeat (int): Percentage of elements in each part to repeat into others.
-        percent_parts_to_repeat_in (int): Percentage of parts to include repeated elements.
+        statuses (str): The list to split.
+        url (str): Number of parts to split into.
 
     Returns:
-        dict: A dictionary where keys are part titles and values are dictionaries with counts and elements.
+        dict: A dictionary where keys are cluster labels and values are dictionaries with counts (no. of elements) and elements.
     """
 
-    if not statuses:
-        return {}
+    postElements = []
+    for posts in statuses:
+        if posts.get('language', None) == 'en' or (posts.get('reblog', {}) and posts.get('reblog', {}).get('language', None) == 'en'):
+            postElements.append(posts)
 
-    num_parts = min(num_parts, len(statuses))
+    # Filter Content 
+    titleTexts = [item['card']['title'] for item in postElements]
+    descriptionTexts = [item['card']['description'] for item in postElements]
 
-    percent_element_to_repeat = min(percent_element_to_repeat, 100)
+    # Generate the payload
+    payload = {
+    "algorithm": "Lingo",
+    "language": "English",
+    "documents": [{"title": title, "body": text} for title, text in zip(titleTexts, descriptionTexts)]
+    }
 
-    percent_parts_to_repeat_in = min(percent_parts_to_repeat_in, 100)
+    # Send the POST request to Carrot2 instance
+    response = requests.post(url, json=payload)
 
-    # Determine the size of each chunk
-    k, m = divmod(len(statuses), num_parts)  # k: size of each chunk, m: remainder
-    parts = [statuses[i * k + min(i, m):(i + 1) * k + min(i + 1, m)] for i in range(num_parts)]
+    # Check the response
+    clusterLabels = {}
+    if response.status_code == 200:
+        # Group Labels and Statuses based on results obtained
+        carrotResponse = response.json()
+        for cluster in carrotResponse['clusters']:
+            for label in cluster['labels']:
+                clusterLabels[label] = {
+                    "count": len(cluster['documents']),
+                    "elements": [postElements[doc_id] for doc_id in cluster['documents']]
+                }
 
-    if not dont_repeat:
+        # Print the formatted output (For Verification)
+        # for cluster in carrotResponse['clusters']:
+        #     for label in cluster['labels']:
+        #         clusterLabels.append(f"Label: {label}")
+        #         for doc_id in cluster['documents']:
+        #             clusterLabels.append(f"Post: {descriptionTexts[doc_id]}")
+        #         clusterLabels.append("")  
+        # print("\n".join(clusterLabels))
+    else:
+        print("Error:", response.status_code, response.text)
 
-        overlap_size = round((percent_element_to_repeat / 100) * k)
-
-        parts_to_repeat_in = round((percent_parts_to_repeat_in / 100) * num_parts)
-
-        for i in range(parts_to_repeat_in):
-            for j in range(parts_to_repeat_in):
-                if i == j:
-                    continue
-                overlap_elements = parts[j][:overlap_size]
-                parts[i].extend(overlap_elements)
-
-
-    # Create the dictionary with titles
-    result = {f"{title_prefix} {i + 1}": {"count": len(part), "elements": part} for i, part in enumerate(parts)}
-
-    return result
-
-# # Example usage
-# elements = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-# n = 3
-# output = split_list_to_dict(elements, n)
-# print(output)
+    return clusterLabels

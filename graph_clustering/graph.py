@@ -43,7 +43,7 @@ def get_profile(id):
             data = {
                 'account': account,
                 'statuses': {
-                    'cluster': cluster_statuses(statuses=statuses, num_parts=5, title_prefix="tech")
+                    'cluster': cluster_statuses(statuses=statuses, url ="http://localhost:8080/service/cluster")
                 }
             }
             return data
