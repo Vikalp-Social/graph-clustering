@@ -1,4 +1,5 @@
 import requests
+from bs4 import BeautifulSoup
 
 def cluster_statuses(statuses, url):
 
@@ -19,9 +20,15 @@ def cluster_statuses(statuses, url):
         if posts.get('language', None) == 'en' or (posts.get('reblog', {}) and posts.get('reblog', {}).get('language', None) == 'en'):
             postElements.append(posts)
 
-    # Filter Content 
-    titleTexts = [item['card']['title'] for item in postElements]
-    descriptionTexts = [item['card']['description'] for item in postElements]
+    # Filter Content
+    titleTexts = [
+        item['card']['title'] if item.get('card') and 'title' in item['card'] else "" 
+        for item in postElements
+    ]
+    descriptionTexts = [
+        item['card']['description'] if item.get('card') and 'description' in item['card'] else BeautifulSoup(item["content"], "html.parser").get_text()
+        for item in postElements
+    ]
 
     # Generate the payload
     payload = {
@@ -46,6 +53,7 @@ def cluster_statuses(statuses, url):
                 }
 
         # Print the formatted output (For Verification)
+        # clusterLabels = []
         # for cluster in carrotResponse['clusters']:
         #     for label in cluster['labels']:
         #         clusterLabels.append(f"Label: {label}")
