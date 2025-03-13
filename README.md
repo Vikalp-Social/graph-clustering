@@ -13,4 +13,5 @@
 
 
 ## Now get the api server running
+- install all python dependencies in the requirements.txt file
 - `python3 graph_clustering/graph.py`
