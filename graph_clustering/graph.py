@@ -8,7 +8,7 @@ from clustering import cluster_statuses
 app = Flask(__name__)
 cors = CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
-app.config['DOMAIN'] = "https://vikalp.social"
+app.config['DOMAIN'] = "http://localhost:3002"
 
 #fetch user account data
 @app.get("/api/v1/accounts/<id>")

@@ -13,7 +13,7 @@ def register_app():
     try:
         body = {
             'client_name': "Vikalp",
-            'redirect_uris': f"{current_app.config['DOMAIN']}/auth/",
+            'redirect_uris': f"{current_app.config['DOMAIN']}/auth",
             'scopes': "read write push",
             'website': f"{current_app.config['DOMAIN']}"
         }
@@ -45,13 +45,14 @@ def get_auth_token():
         body = {
             'client_id': request.json['id'],
             'client_secret': request.json['secret'],
-            'redirect_uri': f"{current_app.config['DOMAIN']}/auth/",
+            'redirect_uri': f"{current_app.config['DOMAIN']}/auth",
             'grant_type': "authorization_code",
             'code': request.json['code'],
             'scope': "read write push",
         }
         res1 = requests.post(f"https://{request.json['instance']}/oauth/token", json=body)
         auth = json.loads(res1.text)
+        print(auth)
         headers = {
             "Authorization": f"Bearer {auth['access_token']}"
         }
